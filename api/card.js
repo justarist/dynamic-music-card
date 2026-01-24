@@ -15,24 +15,41 @@ module.exports = async (req, res) => {
         let data = {};
         
         if (link.includes('spotify.com')) {
-            const response = await axios.get(link, { headers: { 'User-Agent': 'Mozilla/5.0' } });
+            const response = await axios.get(link, { 
+                headers: { 
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36',
+                    'Accept-Language': 'en-US,en;q=0.9'
+                } 
+            });
             const $ = cheerio.load(response.data);
             
-            const fullTitle = $('title').text() || "";
+            const ogTitle = $('meta[property="og:title"]').attr('content') || "";
             const ogDesc = $('meta[property="og:description"]').attr('content') || "";
+            const twitterData1 = $('meta[name="twitter:data1"]').attr('content') || "";
             
-            let title = $('meta[property="og:title"]').attr('content') || "Unknown";
+            let title = ogTitle;
             let author = "Unknown Artist";
 
-            if (fullTitle.includes('song by ')) {
-                author = fullTitle.split('song by ')[1].split(' | Spotify')[0];
-            } else if (ogDesc.includes(' · ')) {
-                author = ogDesc.split(' · ')[1];
+            if (twitterData1 && !twitterData1.includes(':')) {
+                author = twitterData1;
+            } 
+            else if (ogDesc.includes(' · ')) {
+                const parts = ogDesc.split(' · ');
+                author = (parts[0].toLowerCase() !== title.toLowerCase()) ? parts[0] : parts[1];
+            }
+            else {
+                const pageTitle = $('title').text();
+                if (pageTitle.includes(' | Spotify')) {
+                    const cleanTitle = pageTitle.replace(' | Spotify', '');
+                    if (cleanTitle.includes(' - song by ')) {
+                        author = cleanTitle.split(' - song by ')[1];
+                    }
+                }
             }
 
             data = {
                 title: title,
-                author: author,
+                author: author.trim(),
                 image: $('meta[property="og:image"]').attr('content'),
                 platform: 'spotify',
                 color: "#1DB954"
