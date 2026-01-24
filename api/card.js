@@ -12,57 +12,35 @@ module.exports = async (req, res) => {
     if (!link) return res.status(400).send('No link provided');
 
     try {
-        let data = {};
-        
+        let data = { title: "Unknown", author: "Unknown Artist", image: "", platform: "spotify", color: "#1DB954" };
+
         if (link.includes('spotify.com')) {
-            const response = await axios.get(link, { 
-                headers: { 
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36',
-                    'Accept-Language': 'en-US,en;q=0.9'
-                } 
+            const response = await axios.get(link, {
+                headers: { 'User-Agent': 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)' }
             });
             const $ = cheerio.load(response.data);
             
-            const ogTitle = $('meta[property="og:title"]').attr('content') || "";
-            const ogDesc = $('meta[property="og:description"]').attr('content') || "";
-            const twitterData1 = $('meta[name="twitter:data1"]').attr('content') || "";
+            data.title = $('meta[property="og:title"]').attr('content') || "Unknown Title";
+            data.image = $('meta[property="og:image"]').attr('content');
             
-            let title = ogTitle;
-            let author = "Unknown Artist";
+            const ogDesc = $('meta[property="og:description"]').attr('content') || "";
+            const twitter1 = $('meta[name="twitter:data1"]').attr('content');
 
-            if (twitterData1 && !twitterData1.includes(':')) {
-                author = twitterData1;
-            } 
-            else if (ogDesc.includes(' · ')) {
+            if (twitter1 && !twitter1.includes(':')) {
+                data.author = twitter1;
+            } else if (ogDesc.includes(' · ')) {
                 const parts = ogDesc.split(' · ');
-                author = (parts[0].toLowerCase() !== title.toLowerCase()) ? parts[0] : parts[1];
+                data.author = (parts[0].toLowerCase() === data.title.toLowerCase()) ? parts[1] : parts[0];
+            } else {
+                data.author = ogDesc;
             }
-            else {
-                const pageTitle = $('title').text();
-                if (pageTitle.includes(' | Spotify')) {
-                    const cleanTitle = pageTitle.replace(' | Spotify', '');
-                    if (cleanTitle.includes(' - song by ')) {
-                        author = cleanTitle.split(' - song by ')[1];
-                    }
-                }
-            }
-
-            data = {
-                title: title,
-                author: author.trim(),
-                image: $('meta[property="og:image"]').attr('content'),
-                platform: 'spotify',
-                color: "#1DB954"
-            };
         } else {
             const oembed = await axios.get(`https://www.youtube.com/oembed?url=${encodeURIComponent(link)}&format=json`);
-            data = {
-                title: oembed.data.title,
-                author: oembed.data.author_name.replace(' - Topic', ''),
-                image: oembed.data.thumbnail_url.replace('hqdefault', 'maxresdefault'),
-                platform: 'ytmusic',
-                color: "#FF0000"
-            };
+            data.title = oembed.data.title;
+            data.author = oembed.data.author_name.replace(' - Topic', '');
+            data.image = oembed.data.thumbnail_url.replace('hqdefault', 'maxresdefault');
+            data.platform = 'ytmusic';
+            data.color = "#FF0000";
         }
 
         const imgResp = await axios.get(data.image, { responseType: 'arraybuffer' });
@@ -74,41 +52,26 @@ module.exports = async (req, res) => {
         const bgColor = `rgb(${Math.floor(rgba.r * 0.8)}, ${Math.floor(rgba.g * 0.8)}, ${Math.floor(rgba.b * 0.8)})`;
         const base64 = await image.getBase64Async(Jimp.MIME_JPEG);
 
+        const containerWidth = 260;
         const titleWidth = data.title.length * 14; 
         const authorWidth = data.author.length * 9;
-        const containerWidth = 260;
 
         const svg = `
         <svg width="600" height="300" viewBox="0 0 600 300" xmlns="http://www.w3.org/2000/svg">
             <rect width="600" height="300" rx="25" fill="${bgColor}"/>
-            
             <clipPath id="c"><rect x="30" y="30" width="240" height="240" rx="15"/></clipPath>
             <image href="${base64}" x="30" y="30" width="240" height="240" clip-path="url(#c)"/>
-            
             <path d="${LOGOS[data.platform]}" fill="${data.color}" transform="translate(540, 30) scale(1.3)"/>
             
-            <svg x="300" y="100" width="${containerWidth}" height="100" viewBox="0 0 ${containerWidth} 100">
-                <defs>
-                    <clipPath id="textClip"><rect width="${containerWidth}" height="100" /></clipPath>
-                </defs>
-
-                <g clip-path="url(#textClip)">
-                    <text y="30" font-family="sans-serif" font-size="28" font-weight="bold" fill="white">
-                        ${data.title}
-                        ${titleWidth > containerWidth ? `
-                            <animate attributeName="x" from="0" to="-${titleWidth - containerWidth + 40}" dur="8s" repeatCount="indefinite" begin="1s" />
-                        ` : ''}
-                    </text>
-                </g>
-                
-                <g clip-path="url(#textClip)">
-                    <text y="65" font-family="sans-serif" font-size="18" fill="#ccc">
-                        ${data.author}
-                        ${authorWidth > containerWidth ? `
-                            <animate attributeName="x" from="0" to="-${authorWidth - containerWidth + 40}" dur="8s" repeatCount="indefinite" begin="1s" />
-                        ` : ''}
-                    </text>
-                </g>
+            <svg x="300" y="100" width="${containerWidth}" height="100">
+                <text y="30" font-family="sans-serif" font-size="28" font-weight="bold" fill="white">
+                    ${data.title}
+                    ${titleWidth > containerWidth ? `<animate attributeName="x" from="10" to="-${titleWidth - 100}" dur="10s" repeatCount="indefinite" />` : ''}
+                </text>
+                <text y="65" font-family="sans-serif" font-size="18" fill="#ccc">
+                    ${data.author}
+                    ${authorWidth > containerWidth ? `<animate attributeName="x" from="10" to="-${authorWidth - 100}" dur="10s" repeatCount="indefinite" />` : ''}
+                </text>
             </svg>
 
             <circle cx="540" cy="240" r="25" fill="white"/>
@@ -120,6 +83,7 @@ module.exports = async (req, res) => {
         res.status(200).send(svg);
 
     } catch (e) {
-        res.status(500).send(`Error: ${e.message}`);
+        console.error("SERVER ERROR:", e.message);
+        res.status(200).send(`<svg width="600" height="300" xmlns="http://www.w3.org/2000/svg"><rect width="600" height="300" fill="#333"/><text x="50%" y="50%" fill="white" text-anchor="middle" font-family="sans-serif">Error: ${e.message}</text></svg>`);
     }
 };
