@@ -50,7 +50,7 @@ module.exports = async (req, res) => {
         const cp = image.clone().resize(1, 1);
         const hex = cp.getPixelColor(0, 0);
         const rgba = Jimp.intToRGBA(hex);
-        const bgColor = `rgb(${Math.floor(rgba.r * 0.4)}, ${Math.floor(rgba.g * 0.4)}, ${Math.floor(rgba.b * 0.4)})`;
+        const bgColor = `rgb(${Math.floor(rgba.r * 0.8)}, ${Math.floor(rgba.g * 0.8)}, ${Math.floor(rgba.b * 0.8)})`;
         
         const base64 = await image.getBase64Async(Jimp.MIME_JPEG);
 
