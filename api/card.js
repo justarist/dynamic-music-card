@@ -13,14 +13,20 @@ module.exports = async (req, res) => {
 
     try {
         let data = {};
-
+        
         if (link.includes('spotify.com')) {
             const response = await axios.get(link, { headers: { 'User-Agent': 'Mozilla/5.0' } });
             const $ = cheerio.load(response.data);
-            const description = $('meta[property="og:description"]').attr('content') || "";
+            
+            const ogTitle = $('meta[property="og:title"]').attr('content') || 'Unknown';
+            const ogDesc = $('meta[property="og:description"]').attr('content') || "";
+            
+            const descParts = ogDesc.split(' · ');
+            let author = descParts.length > 1 ? descParts[1] : descParts[0];
+
             data = {
-                title: $('meta[property="og:title"]').attr('content') || 'Unknown',
-                author: description.includes(' · ') ? description.split(' · ')[1] : description,
+                title: ogTitle,
+                author: author,
                 image: $('meta[property="og:image"]').attr('content'),
                 platform: 'spotify',
                 color: "#1DB954"
@@ -38,28 +44,56 @@ module.exports = async (req, res) => {
 
         const imgResp = await axios.get(data.image, { responseType: 'arraybuffer' });
         const image = await Jimp.read(imgResp.data);
-        image.resize(240, 240);
 
+        image.cover(240, 240);
+        
         const cp = image.clone().resize(1, 1);
         const hex = cp.getPixelColor(0, 0);
         const rgba = Jimp.intToRGBA(hex);
-        const bgColor = `rgb(${Math.floor(rgba.r * 0.5)}, ${Math.floor(rgba.g * 0.5)}, ${Math.floor(rgba.b * 0.5)})`;
+        const bgColor = `rgb(${Math.floor(rgba.r * 0.4)}, ${Math.floor(rgba.g * 0.4)}, ${Math.floor(rgba.b * 0.4)})`;
         
         const base64 = await image.getBase64Async(Jimp.MIME_JPEG);
 
+        const titleNeedsScroll = data.title.length > 18;
+        const authorNeedsScroll = data.author.length > 25;
+
         const svg = `
         <svg width="600" height="300" viewBox="0 0 600 300" xmlns="http://www.w3.org/2000/svg">
+            <style>
+                .t { font-family: sans-serif; fill: white; font-size: 28px; font-weight: bold; }
+                .a { font-family: sans-serif; fill: #ccc; font-size: 18px; }
+                .scroll-box { clip-path: inset(0 0 0 0); }
+            </style>
+            
             <rect width="600" height="300" rx="25" fill="${bgColor}"/>
+            
             <clipPath id="c"><rect x="30" y="30" width="240" height="240" rx="15"/></clipPath>
             <image href="${base64}" x="30" y="30" width="240" height="240" clip-path="url(#c)"/>
+            
             <path d="${LOGOS[data.platform]}" fill="${data.color}" transform="translate(540, 30) scale(1.3)"/>
-            <text x="300" y="130" fill="white" font-family="sans-serif" font-size="28" font-weight="bold">${data.title.substring(0, 20)}${data.title.length > 20 ? '...' : ''}</text>
-            <text x="300" y="165" fill="#ccc" font-family="sans-serif" font-size="18">${data.author.substring(0, 25)}</text>
+            
+            <svg x="300" y="100" width="270" height="100" class="scroll-box">
+                <text y="30" class="t">
+                    ${data.title}
+                    ${titleNeedsScroll ? `
+                        <animate attributeName="x" from="0" to="-${data.title.length * 10}" dur="10s" repeatCount="indefinite" />
+                    ` : ''}
+                </text>
+                
+                <text y="65" class="a">
+                    ${data.author}
+                    ${authorNeedsScroll ? `
+                        <animate attributeName="x" from="0" to="-${data.author.length * 8}" dur="10s" repeatCount="indefinite" />
+                    ` : ''}
+                </text>
+            </svg>
+
             <circle cx="540" cy="240" r="25" fill="white"/>
             <path d="M545 240l-10-7v14z" fill="black"/>
         </svg>`;
 
         res.setHeader('Content-Type', 'image/svg+xml');
+        res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
         res.status(200).send(svg);
 
     } catch (e) {
