@@ -18,14 +18,20 @@ module.exports = async (req, res) => {
             const response = await axios.get(link, { headers: { 'User-Agent': 'Mozilla/5.0' } });
             const $ = cheerio.load(response.data);
             
-            const ogTitle = $('meta[property="og:title"]').attr('content') || 'Unknown';
+            const fullTitle = $('title').text() || "";
             const ogDesc = $('meta[property="og:description"]').attr('content') || "";
             
-            const descParts = ogDesc.split(' · ');
-            let author = descParts.length > 1 ? descParts[1] : descParts[0];
+            let title = $('meta[property="og:title"]').attr('content') || "Unknown";
+            let author = "Unknown Artist";
+
+            if (fullTitle.includes('song by ')) {
+                author = fullTitle.split('song by ')[1].split(' | Spotify')[0];
+            } else if (ogDesc.includes(' · ')) {
+                author = ogDesc.split(' · ')[1];
+            }
 
             data = {
-                title: ogTitle,
+                title: title,
                 author: author,
                 image: $('meta[property="og:image"]').attr('content'),
                 platform: 'spotify',
@@ -44,27 +50,19 @@ module.exports = async (req, res) => {
 
         const imgResp = await axios.get(data.image, { responseType: 'arraybuffer' });
         const image = await Jimp.read(imgResp.data);
-
         image.cover(240, 240);
         
         const cp = image.clone().resize(1, 1);
-        const hex = cp.getPixelColor(0, 0);
-        const rgba = Jimp.intToRGBA(hex);
+        const rgba = Jimp.intToRGBA(cp.getPixelColor(0, 0));
         const bgColor = `rgb(${Math.floor(rgba.r * 0.8)}, ${Math.floor(rgba.g * 0.8)}, ${Math.floor(rgba.b * 0.8)})`;
-        
         const base64 = await image.getBase64Async(Jimp.MIME_JPEG);
 
-        const titleNeedsScroll = data.title.length > 18;
-        const authorNeedsScroll = data.author.length > 25;
+        const titleWidth = data.title.length * 14; 
+        const authorWidth = data.author.length * 9;
+        const containerWidth = 260;
 
         const svg = `
         <svg width="600" height="300" viewBox="0 0 600 300" xmlns="http://www.w3.org/2000/svg">
-            <style>
-                .t { font-family: sans-serif; fill: white; font-size: 28px; font-weight: bold; }
-                .a { font-family: sans-serif; fill: #ccc; font-size: 18px; }
-                .scroll-box { clip-path: inset(0 0 0 0); }
-            </style>
-            
             <rect width="600" height="300" rx="25" fill="${bgColor}"/>
             
             <clipPath id="c"><rect x="30" y="30" width="240" height="240" rx="15"/></clipPath>
@@ -72,20 +70,28 @@ module.exports = async (req, res) => {
             
             <path d="${LOGOS[data.platform]}" fill="${data.color}" transform="translate(540, 30) scale(1.3)"/>
             
-            <svg x="300" y="100" width="270" height="100" class="scroll-box">
-                <text y="30" class="t">
-                    ${data.title}
-                    ${titleNeedsScroll ? `
-                        <animate attributeName="x" from="0" to="-${data.title.length * 10}" dur="10s" repeatCount="indefinite" />
-                    ` : ''}
-                </text>
+            <svg x="300" y="100" width="${containerWidth}" height="100" viewBox="0 0 ${containerWidth} 100">
+                <defs>
+                    <clipPath id="textClip"><rect width="${containerWidth}" height="100" /></clipPath>
+                </defs>
+
+                <g clip-path="url(#textClip)">
+                    <text y="30" font-family="sans-serif" font-size="28" font-weight="bold" fill="white">
+                        ${data.title}
+                        ${titleWidth > containerWidth ? `
+                            <animate attributeName="x" from="0" to="-${titleWidth - containerWidth + 40}" dur="8s" repeatCount="indefinite" begin="1s" />
+                        ` : ''}
+                    </text>
+                </g>
                 
-                <text y="65" class="a">
-                    ${data.author}
-                    ${authorNeedsScroll ? `
-                        <animate attributeName="x" from="0" to="-${data.author.length * 8}" dur="10s" repeatCount="indefinite" />
-                    ` : ''}
-                </text>
+                <g clip-path="url(#textClip)">
+                    <text y="65" font-family="sans-serif" font-size="18" fill="#ccc">
+                        ${data.author}
+                        ${authorWidth > containerWidth ? `
+                            <animate attributeName="x" from="0" to="-${authorWidth - containerWidth + 40}" dur="8s" repeatCount="indefinite" begin="1s" />
+                        ` : ''}
+                    </text>
+                </g>
             </svg>
 
             <circle cx="540" cy="240" r="25" fill="white"/>
