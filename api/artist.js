@@ -87,8 +87,12 @@ module.exports = async (req, res) => {
                 </g>
             </svg>
 
-            <circle cx="540" cy="240" r="25" fill="white"/>
-            <path d="M7 7h8.586L5.293 17.293l1.414 1.414L17 8.414V17h2V5H7v2z" fill="black"/>
+            <g transform="translate(550, 105)">
+                <circle cx="15" cy="15" r="15" fill="white"/>
+                <svg width="20" height="20" x="5" y="5" viewBox="0 0 24 24">
+                    <path d="M7 7h8.586L5.293 17.293l1.414 1.414L17 8.414V17h2V5H7v2z" fill="black"/>
+                </svg>
+            </g>
         </svg>`;
 
         res.setHeader('Content-Type', 'image/svg+xml');
