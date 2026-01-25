@@ -143,7 +143,7 @@ module.exports = async (req, res) => {
                         ` : ''}
                     </text>
                     
-                    <text x="0" y="65" font-family="sans-serif" font-size="18" fill="#ccc">
+                    <text x="0" y="65" font-family="sans-serif" font-size="24" fill="#ccc">
                         ${data.author}
                         ${authorWidth * 12 > containerWidth ? `
                             <animate attributeName="x" from="0" to="-${authorWidth * 12 - containerWidth}" dur="10s" repeatCount="indefinite" />
