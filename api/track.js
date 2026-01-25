@@ -118,8 +118,8 @@ module.exports = async (req, res) => {
         const base64 = await image.getBase64Async(Jimp.MIME_JPEG);
 
         const containerWidth = 260;
-        const titleWidth = data.title.length * 14; 
-        const authorWidth = data.author.length * 9;
+        const titleWidth = data.title.length; 
+        const authorWidth = data.author.length;
 
         const logoBase64 = LOGOS[data.platform];
 
@@ -138,14 +138,14 @@ module.exports = async (req, res) => {
                 <g clip-path="url(#textClip)">
                     <text x="0" y="30" font-family="sans-serif" font-size="36" font-weight="bold" fill="white">
                         ${data.title}
-                        ${titleWidth > containerWidth ? `
+                        ${titleWidth * 28 > containerWidth ? `
                             <animate attributeName="x" from="0" to="-${titleWidth - containerWidth}" dur="10s" repeatCount="indefinite" />
                         ` : ''}
                     </text>
                     
                     <text x="0" y="65" font-family="sans-serif" font-size="18" fill="#ccc">
                         ${data.author}
-                        ${authorWidth > containerWidth ? `
+                        ${authorWidth * 12 > containerWidth ? `
                             <animate attributeName="x" from="0" to="-${authorWidth - containerWidth}" dur="10s" repeatCount="indefinite" />
                         ` : ''}
                     </text>
