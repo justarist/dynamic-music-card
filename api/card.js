@@ -53,26 +53,32 @@ module.exports = async (req, res) => {
             data.image = oembed.data.thumbnail_url.replace('hqdefault', 'maxresdefault');
             data.platform = 'ytmusic';
         } else if (link.includes('music.yandex')) {
-            const resp = await axios.get(link, { 
-                headers: { 
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-                    'Accept-Language': 'ru-RU,ru;q=0.9,en-US;q=0.8',
-                    'Cookie': 'yandexuid=1234567890;'
-                } 
-            });
-            const $ = cheerio.load(resp.data);
+            const oembedUrl = `https://music.yandex.ru/oembed?url=${encodeURIComponent(link)}&format=json`;
             
-            data.title = $('meta[property="og:title"]').attr('content') || "Трек";
-            let rawAuthor = $('meta[property="og:description"]').attr('content') || "Артист";
-            data.author = rawAuthor.split(' — ')[0];
-            
-            let rawImg = $('meta[property="og:image"]').attr('content') || $('meta[name="twitter:image"]').attr('content');
-            
-            if (rawImg) {
-                data.image = rawImg.replace('%%', '400x400');
-                if (!data.image.startsWith('http')) data.image = 'https:' + data.image;
-            } else {
+            try {
+                const resp = await axios.get(oembedUrl);
+                
+                const fullTitle = resp.data.title || "Трек";
+                
+                if (fullTitle.includes(' — ')) {
+                    const parts = fullTitle.split(' — ');
+                    data.title = parts[0].trim();
+                    data.author = parts[1].trim();
+                } else {
+                    data.title = fullTitle;
+                    data.author = "Yandex Music";
+                }
+
+                let rawImg = resp.data.thumbnail_url;
+                if (rawImg) {
+                    data.image = rawImg.replace('%%', '400x400');
+                    if (!data.image.startsWith('http')) data.image = 'https:' + data.image;
+                }
+
+            } catch (yandexError) {
+                console.error("Yandex oEmbed Error:", yandexError.message);
+                data.title = "Yandex Music";
+                data.author = "Track";
                 data.image = null; 
             }
             
