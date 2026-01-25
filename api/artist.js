@@ -35,7 +35,6 @@ module.exports = async (req, res) => {
                 const apiUrl = `https://music.yandex.ru/handlers/artist.jsx?artist=${artistId}`;
                 const resp = await axios.get(apiUrl, { headers: { 'User-Agent': 'Mozilla/5.0' } });
                 data.title = resp.data.artist.name;
-                data.author = resp.data.artist.genres?.join(', ') || "Исполнитель";
                 if (resp.data.artist.cover) {
                     data.image = "https://" + resp.data.artist.cover.uri.replace('%%', '400x400');
                 }
@@ -46,7 +45,6 @@ module.exports = async (req, res) => {
             const $ = cheerio.load(resp.data);
             data.title = $('meta[property="og:title"]').attr('content')?.replace(' on Apple Music', '') || "Apple Artist";
             data.image = $('meta[property="og:image"]').attr('content')?.replace('/{w}x{h}bb', '/600x600bb');
-            data.author = "Apple Music Artist";
             data.platform = 'apple';
         } else if (link.includes('soundcloud.com')) {
             const oembed = await axios.get(`https://soundcloud.com/oembed?url=${encodeURIComponent(link)}&format=json`);
