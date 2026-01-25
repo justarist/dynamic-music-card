@@ -108,8 +108,6 @@ module.exports = async (req, res) => {
             data.platform = 'soundcloud';
             data.title = data.title.split(' by ')[0].trim();
         }
-        data.color = COLORS[data.platform];
-
         const imgResp = await axios.get(data.image, { responseType: 'arraybuffer' });
         const image = await Jimp.read(imgResp.data);
         image.cover(240, 240);
