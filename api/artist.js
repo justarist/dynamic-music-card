@@ -68,23 +68,24 @@ module.exports = async (req, res) => {
         const logoBase64 = LOGOS[data.platform];
 
         const svg = `
-        <svg width="600" height="150" viewBox="0 0 600 300" xmlns="http://www.w3.org/2000/svg">
+        <svg width="600" height="150" viewBox="0 0 600 150" xmlns="http://www.w3.org/2000/svg">
             <rect width="600" height="150" rx="25" fill="${bgColor}"/>
-            <clipPath id="circleClip"><circle cx="150" cy="150" r="120" /></clipPath>
-            <image href="${base64}" x="30" y="15" width="120" height="240" clip-path="url(#circleClip)"/>
-            <image href="${logoBase64}" x="540" y="30" width="30" height="15" />
             
-            <svg x="300" y="50" width="${containerWidth}" height="50">
-                <defs>
-                    <clipPath id="textClip"><rect width="${containerWidth}" height="100" /></clipPath>
-                </defs>
-
+            <defs>
+                <clipPath id="circleClip">
+                    <circle cx="75" cy="75" r="55" />
+                </clipPath>
+            </defs>
+            <image href="${base64}" x="20" y="20" width="110" height="110" clip-path="url(#circleClip)"/>
+            
+            <image href="${LOGOS[data.platform]}" x="550" y="20" width="30" height="30" />
+            
+            <svg x="160" y="55" width="360" height="50">
+                <defs><clipPath id="textClip"><rect width="360" height="50" /></clipPath></defs>
                 <g clip-path="url(#textClip)">
-                    <text x="0" y="30" font-family="sans-serif" font-size="32" font-weight="bold" fill="white">
-                        ${data.title}
-                        ${titleWidth + 40 > containerWidth ? `
-                            <animate attributeName="x" from="0" to="-${titleWidth - containerWidth + 40}" dur="10s" repeatCount="indefinite" />
-                        ` : ''}
+                    <text x="0" y="32" font-family="sans-serif" font-size="34" font-weight="bold" fill="white">
+                        ${safeTitle}
+                        ${titleWidth > 360 ? `<animate attributeName="x" from="0" to="-${titleWidth - 360 + 40}" dur="10s" repeatCount="indefinite" />` : ''}
                     </text>
                 </g>
             </svg>
