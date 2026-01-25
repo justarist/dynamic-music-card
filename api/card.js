@@ -53,33 +53,35 @@ module.exports = async (req, res) => {
             data.image = oembed.data.thumbnail_url.replace('hqdefault', 'maxresdefault');
             data.platform = 'ytmusic';
         } else if (link.includes('music.yandex')) {
-            const oembedUrl = `https://music.yandex.ru/oembed?url=${encodeURIComponent(link)}&format=json`;
+            const match = link.match(/album\/(\d+)\/track\/(\d+)/);
             
-            try {
-                const resp = await axios.get(oembedUrl);
+            if (match) {
+                const albumId = match[1];
+                const trackId = match[2];
+                const apiUrl = `https://music.yandex.ru/handlers/track.jsx?track=${trackId}:${albumId}`;
                 
-                const fullTitle = resp.data.title || "Трек";
-                
-                if (fullTitle.includes(' — ')) {
-                    const parts = fullTitle.split(' — ');
-                    data.title = parts[0].trim();
-                    data.author = parts[1].trim();
-                } else {
-                    data.title = fullTitle;
-                    data.author = "Yandex Music";
+                try {
+                    const resp = await axios.get(apiUrl, {
+                        headers: { 'User-Agent': 'Mozilla/5.0 (compatible; Googlebot/2.1)' }
+                    });
+                    
+                    const trackData = resp.data.track;
+                    
+                    if (trackData) {
+                        data.title = trackData.title;
+                        data.author = trackData.artists ? trackData.artists.map(a => a.name).join(', ') : "Артист";
+                        
+                        if (trackData.coverUri) {
+                            data.image = "https://" + trackData.coverUri.replace('%%', '400x400');
+                        }
+                    }
+                } catch (err) {
+                    console.error("Yandex API Error:", err.message);
+                    data.title = "Yandex Music";
                 }
-
-                let rawImg = resp.data.thumbnail_url;
-                if (rawImg) {
-                    data.image = rawImg.replace('%%', '400x400');
-                    if (!data.image.startsWith('http')) data.image = 'https:' + data.image;
-                }
-
-            } catch (yandexError) {
-                console.error("Yandex oEmbed Error:", yandexError.message);
+            } else {
                 data.title = "Yandex Music";
-                data.author = "Track";
-                data.image = null; 
+                data.author = "Playlist/Artist";
             }
             
             data.platform = 'yandex';
