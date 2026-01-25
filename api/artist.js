@@ -88,7 +88,7 @@ module.exports = async (req, res) => {
                 <g clip-path="url(#textClip)">
                     <text x="0" y="32" font-family="sans-serif" font-size="36" font-weight="bold" fill="white">
                         ${data.title}
-                        ${titleWidth * 28 > containerWidth ? `<animate attributeName="x" from="0" to="-${titleWidth - containerWidth}" dur="10s" repeatCount="indefinite" />` : ''}
+                        ${titleWidth * 28 > containerWidth ? `<animate attributeName="x" from="0" to="-${titleWidth * 28 - containerWidth}" dur="10s" repeatCount="indefinite" />` : ''}
                     </text>
                 </g>
             </svg>
