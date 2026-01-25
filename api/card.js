@@ -88,14 +88,25 @@ module.exports = async (req, res) => {
         } else if (link.includes('music.apple.com')) {
             const resp = await axios.get(link, { headers: { 'User-Agent': 'Mozilla/5.0' } });
             const $ = cheerio.load(resp.data);
+            
             const ogTitle = $('meta[property="og:title"]').attr('content') || "";
+            
             if (ogTitle.includes(' by ')) {
-                [data.title, data.author] = ogTitle.split(' by ');
+                const lastByIndex = ogTitle.lastIndexOf(' by ');
+                data.title = ogTitle.substring(0, lastByIndex);
+                data.author = ogTitle.substring(lastByIndex + 4);
             } else {
                 data.title = ogTitle;
                 data.author = "Apple Music";
             }
-            data.image = $('meta[property="og:image"]').attr('content')?.replace(/\/\d+x\d+/, '/400x400');
+            
+            data.author = data.author.replace(' on Apple Music', '').trim();
+            
+            const rawImg = $('meta[property="og:image"]').attr('content');
+            if (rawImg) {
+                data.image = rawImg.replace(/\/\d+x\d+[^/]*\.jpg/, '/600x600bb.jpg').replace('/{w}x{h}bb', '/600x600bb'); 
+            }
+            
             data.platform = 'apple';
         } else if (link.includes('soundcloud.com')) {
             const oembed = await axios.get(`https://soundcloud.com/oembed?url=${encodeURIComponent(link)}&format=json`);
@@ -126,15 +137,28 @@ module.exports = async (req, res) => {
             <image href="${base64}" x="30" y="30" width="240" height="240" clip-path="url(#c)"/>
             <path d="${LOGOS[data.platform]}" fill="${data.color}" transform="translate(540, 30) scale(1.3)"/>
             
-            <svg x="300" y="100" width="${containerWidth}" height="100">
-                <text y="30" font-family="sans-serif" font-size="28" font-weight="bold" fill="white">
-                    ${data.title}
-                    ${titleWidth > containerWidth ? `<animate attributeName="x" from="10" to="-${titleWidth - 100}" dur="10s" repeatCount="indefinite" />` : ''}
-                </text>
-                <text y="65" font-family="sans-serif" font-size="18" fill="#ccc">
-                    ${data.author}
-                    ${authorWidth > containerWidth ? `<animate attributeName="x" from="10" to="-${authorWidth - 100}" dur="10s" repeatCount="indefinite" />` : ''}
-                </text>
+            <svg x="300" y="100" width="${containerWidth}" height="100" viewBox="0 0 ${containerWidth} 100">
+                <defs>
+                    <clipPath id="textClip"><rect width="${containerWidth}" height="100" /></clipPath>
+                </defs>
+
+                <g clip-path="url(#textClip)">
+                    <text y="30" font-family="sans-serif" font-size="28" font-weight="bold" fill="white">
+                        ${data.title}
+                        ${titleWidth > containerWidth ? `
+                            <animate attributeName="x" from="0" to="-${titleWidth - containerWidth + 40}" dur="8s" repeatCount="indefinite" begin="1s" />
+                        ` : ''}
+                    </text>
+                </g>
+                
+                <g clip-path="url(#textClip)">
+                    <text y="65" font-family="sans-serif" font-size="18" fill="#ccc">
+                        ${data.author}
+                        ${authorWidth > containerWidth ? `
+                            <animate attributeName="x" from="0" to="-${authorWidth - containerWidth + 40}" dur="8s" repeatCount="indefinite" begin="1s" />
+                        ` : ''}
+                    </text>
+                </g>
             </svg>
 
             <circle cx="540" cy="240" r="25" fill="white"/>
