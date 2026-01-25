@@ -68,7 +68,7 @@ module.exports = async (req, res) => {
         const base64 = await image.getBase64Async(Jimp.MIME_JPEG);
         const titleWidth = data.title.length * 14; 
         const logoBase64 = LOGOS[data.platform];
-        const containerWidth = 300;
+        const containerWidth = 380;
 
         const svg = `
         <svg width="600" height="150" viewBox="0 0 600 150" xmlns="http://www.w3.org/2000/svg">
@@ -83,12 +83,12 @@ module.exports = async (req, res) => {
             
             <image href="${logoBase64}" x="550" y="20" width="30" height="30" />
             
-            <svg x="160" y="55" width="360" height="50">
-                <defs><clipPath id="textClip"><rect width="360" height="50" /></clipPath></defs>
+            <svg x="160" y="55" width="${containerWidth}" height="50">
+                <defs><clipPath id="textClip"><rect width="${containerWidth}" height="50" /></clipPath></defs>
                 <g clip-path="url(#textClip)">
-                    <text x="0" y="32" font-family="sans-serif" font-size="34" font-weight="bold" fill="white">
+                    <text x="0" y="32" font-family="sans-serif" font-size="36" font-weight="bold" fill="white">
                         ${data.title}
-                        ${titleWidth + 40 > containerWidth ? `<animate attributeName="x" from="0" to="-${titleWidth - containerWidth + 40}" dur="10s" repeatCount="indefinite" />` : ''}
+                        ${titleWidth > containerWidth ? `<animate attributeName="x" from="0" to="-${titleWidth - containerWidth}" dur="10s" repeatCount="indefinite" />` : ''}
                     </text>
                 </g>
             </svg>

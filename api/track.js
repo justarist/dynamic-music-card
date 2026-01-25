@@ -136,17 +136,17 @@ module.exports = async (req, res) => {
                 </defs>
 
                 <g clip-path="url(#textClip)">
-                    <text x="0" y="30" font-family="sans-serif" font-size="28" font-weight="bold" fill="white">
+                    <text x="0" y="30" font-family="sans-serif" font-size="36" font-weight="bold" fill="white">
                         ${data.title}
-                        ${titleWidth + 40 > containerWidth ? `
-                            <animate attributeName="x" from="0" to="-${titleWidth - containerWidth + 40}" dur="10s" repeatCount="indefinite" />
+                        ${titleWidth > containerWidth ? `
+                            <animate attributeName="x" from="0" to="-${titleWidth - containerWidth}" dur="10s" repeatCount="indefinite" />
                         ` : ''}
                     </text>
                     
                     <text x="0" y="65" font-family="sans-serif" font-size="18" fill="#ccc">
                         ${data.author}
-                        ${authorWidth + 40 > containerWidth ? `
-                            <animate attributeName="x" from="0" to="-${authorWidth - containerWidth + 40}" dur="10s" repeatCount="indefinite" />
+                        ${authorWidth > containerWidth ? `
+                            <animate attributeName="x" from="0" to="-${authorWidth - containerWidth}" dur="10s" repeatCount="indefinite" />
                         ` : ''}
                     </text>
                 </g>
