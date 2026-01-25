@@ -68,19 +68,19 @@ module.exports = async (req, res) => {
         const logoBase64 = LOGOS[data.platform];
 
         const svg = `
-        <svg width="600" height="300" viewBox="0 0 600 300" xmlns="http://www.w3.org/2000/svg">
-            <rect width="600" height="300" rx="25" fill="${bgColor}"/>
+        <svg width="600" height="150" viewBox="0 0 600 300" xmlns="http://www.w3.org/2000/svg">
+            <rect width="600" height="150" rx="25" fill="${bgColor}"/>
             <clipPath id="circleClip"><circle cx="150" cy="150" r="120" /></clipPath>
-            <image href="${base64}" x="30" y="30" width="240" height="240" clip-path="url(#circleClip)"/>
-            <image href="${logoBase64}" x="540" y="30" width="30" height="30" />
+            <image href="${base64}" x="30" y="15" width="120" height="240" clip-path="url(#circleClip)"/>
+            <image href="${logoBase64}" x="540" y="30" width="30" height="15" />
             
-            <svg x="300" y="100" width="${containerWidth}" height="100">
+            <svg x="300" y="50" width="${containerWidth}" height="50">
                 <defs>
                     <clipPath id="textClip"><rect width="${containerWidth}" height="100" /></clipPath>
                 </defs>
 
                 <g clip-path="url(#textClip)">
-                    <text x="0" y="35" font-family="sans-serif" font-size="28" font-weight="bold" fill="white">
+                    <text x="0" y="30" font-family="sans-serif" font-size="32" font-weight="bold" fill="white">
                         ${data.title}
                         ${titleWidth + 40 > containerWidth ? `
                             <animate attributeName="x" from="0" to="-${titleWidth - containerWidth + 40}" dur="10s" repeatCount="indefinite" />
@@ -90,7 +90,7 @@ module.exports = async (req, res) => {
             </svg>
 
             <circle cx="540" cy="240" r="25" fill="white"/>
-            <path d="M545 240l-10-7v14z" fill="black"/>
+            <path d="M7 7h8.586L5.293 17.293l1.414 1.414L17 8.414V17h2V5H7v2z" fill="black"/>
         </svg>`;
 
         res.setHeader('Content-Type', 'image/svg+xml');
