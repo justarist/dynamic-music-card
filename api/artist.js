@@ -68,7 +68,7 @@ module.exports = async (req, res) => {
         const base64 = await image.getBase64Async(Jimp.MIME_JPEG);
         const titleWidth = data.title.length; 
         const logoBase64 = LOGOS[data.platform];
-        const containerWidth = 380;
+        const containerWidth = 400;
 
         const svg = `
         <svg width="600" height="150" viewBox="0 0 600 150" xmlns="http://www.w3.org/2000/svg">
