@@ -46,7 +46,10 @@ module.exports = async (req, res) => {
             const resp = await axios.get(link, { headers: { 'User-Agent': 'Mozilla/5.0' } });
             const $ = cheerio.load(resp.data);
             data.title = $('meta[property="og:title"]').attr('content')?.replace(' on Apple Music', '') || "Apple Artist";
-            data.image = $('meta[property="og:image"]').attr('content')?.replace('/{w}x{h}bb', '/600x600bb');
+            let rawImage = $('meta[property="og:image"]').attr('content');
+            if (rawImage) {
+                data.image = rawImage.replace(/\/(\d+)x(\d+)bb/, '/1000x1000bb').replace(/{w}x{h}/, '1000x1000');
+            }
             data.platform = 'apple';
         } else if (link.includes('soundcloud.com')) {
             const oembed = await axios.get(`https://soundcloud.com/oembed?url=${encodeURIComponent(link)}&format=json`);
