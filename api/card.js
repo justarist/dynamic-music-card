@@ -11,11 +11,11 @@ const LOGOS = {
 };
 
 const COLORS = {
-    spotify: "#1DB954",
-    ytmusic: "#FF0000",
-    yandex: "#FFBC0D",
-    apple: "#FB2A41",
-    soundcloud: "#FD5908"
+    spotify: "1DB954",
+    ytmusic: "FF0000",
+    yandex: "FFBC0D",
+    apple: "FB2A41",
+    soundcloud: "FD5908"
 };
 
 module.exports = async (req, res) => {
@@ -100,7 +100,7 @@ module.exports = async (req, res) => {
                 data.author = "Apple Music";
             }
             
-            data.author = data.author.split(' on Apple Music')[0].trim();
+            data.author = data.author.split(' on ')[0].trim();
             
             const rawImg = $('meta[property="og:image"]').attr('content');
             if (rawImg) {
@@ -114,6 +114,7 @@ module.exports = async (req, res) => {
             data.author = oembed.data.author_name;
             data.image = oembed.data.thumbnail_url;
             data.platform = 'soundcloud';
+            data.title = data.title.split(' by ')[0].trim();
         }
         data.color = COLORS[data.platform];
 
@@ -132,8 +133,8 @@ module.exports = async (req, res) => {
 
         let logoBase64 = "";
         try {
-            if (logoSource.startsWith('data:')) {
-                logoBase64 = logoSource;
+            if (LOGOS[data.platform].startsWith('data:')) {
+                logoBase64 = LOGOS[data.platform];
             } else {
                 const logoUrl = `https://cdn.simpleicons.org/${LOGOS[data.platform]}/${COLORS[data.platform]}`;
                 const logoResp = await axios.get(logoUrl, { responseType: 'arraybuffer' });
@@ -158,14 +159,14 @@ module.exports = async (req, res) => {
                 <g clip-path="url(#textClip)">
                     <text x="0" y="30" font-family="sans-serif" font-size="28" font-weight="bold" fill="white">
                         ${data.title}
-                        ${titleWidth > containerWidth ? `
+                        ${titleWidth + 40 > containerWidth ? `
                             <animate attributeName="x" from="0" to="-${titleWidth - containerWidth + 40}" dur="10s" repeatCount="indefinite" />
                         ` : ''}
                     </text>
                     
                     <text x="0" y="65" font-family="sans-serif" font-size="18" fill="#ccc">
                         ${data.author}
-                        ${authorWidth > containerWidth ? `
+                        ${authorWidth + 40 > containerWidth ? `
                             <animate attributeName="x" from="0" to="-${authorWidth - containerWidth + 40}" dur="10s" repeatCount="indefinite" />
                         ` : ''}
                     </text>
