@@ -61,10 +61,7 @@ module.exports = async (req, res) => {
         const rgba = Jimp.intToRGBA(cp.getPixelColor(0, 0));
         const bgColor = `rgb(${Math.floor(rgba.r * 0.8)}, ${Math.floor(rgba.g * 0.8)}, ${Math.floor(rgba.b * 0.8)})`;
         const base64 = await image.getBase64Async(Jimp.MIME_JPEG);
-
-        const containerWidth = 260;
         const titleWidth = data.title.length * 14; 
-
         const logoBase64 = LOGOS[data.platform];
 
         const svg = `
@@ -78,13 +75,13 @@ module.exports = async (req, res) => {
             </defs>
             <image href="${base64}" x="20" y="20" width="110" height="110" clip-path="url(#circleClip)"/>
             
-            <image href="${LOGOS[data.platform]}" x="550" y="20" width="30" height="30" />
+            <image href="${logoBase64}" x="550" y="20" width="30" height="30" />
             
             <svg x="160" y="55" width="360" height="50">
                 <defs><clipPath id="textClip"><rect width="360" height="50" /></clipPath></defs>
                 <g clip-path="url(#textClip)">
                     <text x="0" y="32" font-family="sans-serif" font-size="34" font-weight="bold" fill="white">
-                        ${safeTitle}
+                        ${data.title}
                         ${titleWidth > 360 ? `<animate attributeName="x" from="0" to="-${titleWidth - 360 + 40}" dur="10s" repeatCount="indefinite" />` : ''}
                     </text>
                 </g>
