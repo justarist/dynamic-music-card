@@ -40,8 +40,8 @@ or just
 
 ### Album card
 
-<a href="https://music.youtube.com/playlist?list=OLAK5uy_nTX_UcyURUCsI2KNerL9nZi8mpxfshIAA">
-    <img alt="Example" src="https://dynamic-music-card.vercel.app/api/album?link=https://music.youtube.com/playlist?list=OLAK5uy_nTX_UcyURUCsI2KNerL9nZi8mpxfshIAA" />
+<a href="https://music.yandex.ru/album/22492384">
+    <img alt="Example" src="https://dynamic-music-card.vercel.app/api/album?link=https://music.yandex.ru/album/22492384" />
 </a>
 
 ### Playlist card
