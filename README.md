@@ -34,8 +34,8 @@ or just
 
 ### Artist card 
 
-<a href="https://music.youtube.com/channel/UCZU9T1ceaOgwfLRq7OKFU4Q">
-    <img alt="Example" src="https://dynamic-music-card.vercel.app/api/artist?link=https://music.youtube.com/channel/UCZU9T1ceaOgwfLRq7OKFU4Q" />
+<a href="https://open.spotify.com/artist/6XyY86QOPPrYVGvF9ch6wz">
+    <img alt="Example" src="https://dynamic-music-card.vercel.app/api/artist?link=https://open.spotify.com/artist/6XyY86QOPPrYVGvF9ch6wz" />
 </a>
 
 ### Album card
