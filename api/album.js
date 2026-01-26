@@ -10,90 +10,108 @@ const LOGOS = {
     soundcloud: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZD0iTTIzLjk5OSAxNC4xNjVjLS4wNTIgMS43OTYtMS42MTIgMy4xNjktMy40IDMuMTY5aC04LjE4YS42OC42OCAwIDAgMS0uNjc1LS42ODNWNy44NjJhLjc0Ny43NDcgMCAwIDEgLjQ1Mi0uNzI0cy43NS0uNTEzIDIuMzMzLS41MTNhNS4zNjQgNS4zNjQgMCAwIDEgMi43NjMuNzU1IDUuNDMzIDUuNDMzIDAgMCAxIDIuNTcgMy41NGMuMjgyLS4wOC41NzQtLjEyMS44NjgtLjEyLjg4NCAwIDEuNzMuMzU4IDIuMzQ3Ljk5MnMuOTQ4IDEuNDkgLjkyMiAyLjM3M1pNMTAuNzIxIDguNDIxYy4yNDcgMi45OC40MjcgNS42OTcgMCA4LjY3MmEuMjY0LjI2NCAwIDAgMS0uNTMgMGMtLjM5NS0yLjk0Ni0uMjItNS43MTggMC04LjY3MmEuMjY0LjI2NCAwIDAgMSAuNTMgMHpNOS4wNzIgOS40NDhjLjI4NSAyLjY1OS4zNyA0Ljk4Ni0uMDA2IDcuNjU1YS4yNzcuMjc3IDAgMCAxLS41NSAwYy0uMzMxLTIuNjMtLjI1Ni01LjAyIDAtNy42NTVhLjI3Ny4yNzcgMCAwIDEgLjU1NiAwem0tMS42NjMtLjI1N2MuMjcgMi43MjYuMzkgNS4xNzEgMCA3LjkwNGEuMjY2LjI2NiAwIDAgMS0uNTMyIDBjLS4zOC0yLjY5LS4yNTctNS4yMSAwLTcuOTA0YS4yNjYuMjY2IDAgMCAxIC41MzIgMHptLTEuNjQ3Ljc3YTI2LjEwOCAyNi4xMDggMCAwIDEtLjAwOCA3LjE0N2EuMjcyLjI3MiAwIDAgMS0uNTQyIDAgMjcuOTU1IDI3Ljk1NSAwIDAgMSAwLTcuMTQ3YS4yNzUuMjc1IDAgMCAxIC41NSAwem0tMS42NyAxLjc2OWMuNDIxIDEuODY1LjIyOCAzLjUtLjAyOSA1LjM4OGEuMjU3LjI1NyAwIDAgMS0uNTE0IDBjLS4yMS0xLjg1OC0uMzk4LTMuNTQ5IDAtNS4zODlhLjI3Mi4yNzIgMCAwIDEgLjU0MyAwem0tMS42NTUtLjI3M2MuMzg4IDEuODk3LjI2IDMuNTA4LS4wMSA1LjQxMi0uMDI2LjI4LS41MTQuMjgzLS41NCAwLS4yNDQtMS44NzgtLjM0Ny0zLjU0LS4wMS01LjQxMmEuMjgzLjI4MyAwIDAgMSAuNTYgMHptLTEuNjY4LjkxMWMuNCAxLjI2OC4yNTcgMi4yOTItLjAyNiAzLjU3MmEuMjU3LjI1NyAwIDAgMS0uNTE0IDBjLS4yNDEtMS4yNjItLjM1NC0yLjMxMi0uMDIzLTMuNTcyYS4yODMuMjgzIDAgMCAxIC41NjMgMHoiIGZpbGw9IiNGRDU5MDgiLz48L3N2Zz4="
 };
 
+const formatTime = (ms) => {
+    if (!ms) return "--:--";
+    const min = Math.floor(ms / 60000);
+    const sec = Math.floor((ms % 60000) / 1000);
+    return `${min}:${sec.toString().padStart(2, '0')}`;
+};
+
 module.exports = async (req, res) => {
     const { link } = req.query;
     if (!link) return res.status(400).send('No link provided');
 
     try {
-        let data = { title: "Artist", image: "", platform: "platform" };
+        let data = { title: "Album", author: "Artist", image: "", tracks: [], platform: "platform" };
 
         if (link.includes('spotify.com')) {
             const resp = await axios.get(link, { headers: { 'User-Agent': 'Mozilla/5.0 (compatible; Googlebot/2.1)' } });
             const $ = cheerio.load(resp.data);
-            data.title = $('meta[property="og:title"]').attr('content') || "Spotify Artist";
+            data.title = $('meta[property="og:title"]').attr('content') || "Spotify Album";
+            data.author = $('meta[property="og:description"]').attr('content')?.split(' · ')[0] || "Artist";
             data.image = $('meta[property="og:image"]').attr('content');
+            data.tracks = [{ title: "View full tracklist on Spotify", duration: "--" }];
             data.platform = 'spotify';
         } else if (link.includes('youtube.com') || link.includes('youtu.be')) {
-            const resp = await axios.get(link, { 
-                headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36' } 
-            });
+            const resp = await axios.get(link, { headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/119.0.0.0' } });
             const $ = cheerio.load(resp.data);
-            data.title = $('meta[property="og:title"]').attr('content') || $('title').text().replace(' - YouTube Music', '').replace(' - YouTube', '');
+            data.title = $('meta[property="og:title"]').attr('content') || "YouTube Album";
+            data.author = $('link[itemprop="name"]').attr('content') || "YouTube Artist";
             data.image = $('meta[property="og:image"]').attr('content');
+            data.tracks = [{ title: "View tracks on YouTube Music", duration: "--" }];
             data.platform = 'ytmusic';
         } else if (link.includes('music.yandex')) {
-            const artistId = link.match(/artist\/(\d+)/)?.[1];
-            if (artistId) {
-                const apiUrl = `https://music.yandex.ru/handlers/artist.jsx?artist=${artistId}`;
-                const resp = await axios.get(apiUrl, { headers: { 'User-Agent': 'Mozilla/5.0' } });
-                data.title = resp.data.artist.name;
-                if (resp.data.artist.cover) {
-                    data.image = "https://" + resp.data.artist.cover.uri.replace('%%', '400x400');
-                }
-            }
+            const id = link.match(/album\/(\d+)/)?.[1];
+            const resp = await axios.get(`https://music.yandex.ru/handlers/album.jsx?album=${id}`, { headers: { 'User-Agent': 'Mozilla/5.0' } });
+            data.title = resp.data.title;
+            data.author = resp.data.artists[0].name;
+            data.image = "https://" + resp.data.cover.uri.replace('%%', '400x400');
+            data.tracks = resp.data.volumes[0].map(t => ({ title: t.title, duration: formatTime(t.durationMs) }));
             data.platform = 'yandex';
         } else if (link.includes('music.apple.com')) {
             const resp = await axios.get(link, { headers: { 'User-Agent': 'Mozilla/5.0' } });
             const $ = cheerio.load(resp.data);
-            data.title = $('meta[property="og:title"]').attr('content')?.replace(' on Apple Music', '') || "Apple Artist";
-            let rawImage = $('meta[property="og:image"]').attr('content');
-            if (rawImage) {
-                data.image = rawImage.replace(/\/(\d+)x(\d+)bb/, '/1000x1000bb').replace(/{w}x{h}/, '1000x1000');
-            }
+            data.title = $('meta[property="og:title"]').attr('content')?.split(' by ')[0] || "Album";
+            data.author = $('meta[name="apple:title"]').attr('content')?.split(' by ')[1] || "Artist";
+            data.image = $('meta[property="og:image"]').attr('content')?.replace(/{w}x{h}/, '600x600');
+            
+            const jsonLd = JSON.parse($('script[type="application/ld+json"]').html());
+            const albumObj = Array.isArray(jsonLd) ? jsonLd.find(x => x['@type'] === 'MusicAlbum') : jsonLd;
+            data.tracks = albumObj.track.map(t => ({ title: t.name, duration: t.duration.replace('PT', '').replace('M', ':').replace('S', '') }));
             data.platform = 'apple';
         } else if (link.includes('soundcloud.com')) {
             const oembed = await axios.get(`https://soundcloud.com/oembed?url=${encodeURIComponent(link)}&format=json`);
-            data.title = oembed.data.author_name || oembed.data.title;
+            data.title = oembed.data.title;
+            data.author = oembed.data.author_name;
             data.image = oembed.data.thumbnail_url;
+            data.tracks = [{ title: "Listen full album on SoundCloud", duration: "--" }];
             data.platform = 'soundcloud';
-            data.title = data.title.split(' by ')[0].trim();
         }
+        
         const imgResp = await axios.get(data.image, { responseType: 'arraybuffer' });
         const image = await Jimp.read(imgResp.data);
-        image.cover(240, 240);
-        
         const cp = image.clone().resize(1, 1);
         const rgba = Jimp.intToRGBA(cp.getPixelColor(0, 0));
-        const bgColor = `rgb(${Math.floor(rgba.r * 0.8)}, ${Math.floor(rgba.g * 0.8)}, ${Math.floor(rgba.b * 0.8)})`;
-        const base64 = await image.getBase64Async(Jimp.MIME_JPEG);
-        const titleWidth = data.title.length; 
-        const logoBase64 = LOGOS[data.platform];
-        const containerWidth = 420;
+        
+        const bgColor = `rgb(${Math.floor(rgba.r * 0.7)}, ${Math.floor(rgba.g * 0.7)}, ${Math.floor(rgba.b * 0.7)})`;
+        const listBg = `rgb(${Math.floor(rgba.r * 0.9)}, ${Math.floor(rgba.g * 0.9)}, ${Math.floor(rgba.b * 0.9)})`;
+        const base64 = await image.resize(220, 220).getBase64Async(Jimp.MIME_JPEG);
+
+        const trackHeight = 70;
+        const tracksSvg = data.tracks.map((t, i) => `
+            <g transform="translate(0, ${i * trackHeight})">
+                <rect width="560" height="60" rx="12" fill="rgba(255,255,255,0.07)" x="20"/>
+                <text x="40" y="38" font-family="sans-serif" font-size="20" font-weight="bold" fill="white">${t.title.substring(0, 45)}</text>
+                <text x="540" y="38" font-family="sans-serif" font-size="18" fill="rgba(255,255,255,0.5)" text-anchor="end">${t.duration}</text>
+            </g>`).join('');
+
+        const scrollDist = data.tracks.length * trackHeight;
+        const animDur = Math.max(data.tracks.length * 3, 10);
 
         const svg = `
-        <svg width="600" height="150" viewBox="0 0 600 150" xmlns="http://www.w3.org/2000/svg">
-            <rect width="600" height="150" rx="25" fill="${bgColor}"/>
+        <svg width="600" height="900" viewBox="0 0 600 900" xmlns="http://www.w3.org/2000/svg">
+            <rect width="600" height="900" fill="${bgColor}"/>
+            <rect width="600" height="600" y="300" fill="${listBg}"/>
             
-            <defs>
-                <clipPath id="circleClip">
-                    <circle cx="75" cy="75" r="55" />
-                </clipPath>
-            </defs>
-            <image href="${base64}" x="20" y="20" width="110" height="110" clip-path="url(#circleClip)"/>
+            <clipPath id="r"><rect x="40" y="40" width="220" height="220" rx="20"/></clipPath>
+            <image href="${base64}" x="40" y="40" width="220" height="220" clip-path="url(#r)"/>
+            <image href="${LOGOS[data.platform]}" x="540" y="30" width="30" height="30" />
             
-            <image href="${logoBase64}" x="550" y="20" width="30" height="30" />
-            
-            <svg x="160" y="55" width="${containerWidth}" height="50">
-                <defs><clipPath id="textClip"><rect width="${containerWidth}" height="50" /></clipPath></defs>
-                <g clip-path="url(#textClip)">
-                    <text x="0" y="32" font-family="sans-serif" font-size="36" font-weight="bold" fill="white">
-                        ${data.title}
-                        ${titleWidth * 20 > containerWidth ? `<animate attributeName="x" from="0" to="-${titleWidth * 20 - containerWidth}" dur="10s" repeatCount="indefinite" />` : ''}
-                    </text>
-                </g>
-            </svg>
+            <text x="280" y="130" font-family="sans-serif" font-size="32" font-weight="bold" fill="white">${data.title.substring(0, 22)}</text>
+            <text x="280" y="175" font-family="sans-serif" font-size="22" fill="rgba(255,255,255,0.6)">${data.author.substring(0, 30)}</text>
 
-            <g transform="translate(550, 100)">
+            <svg x="0" y="320" width="600" height="560">
+                <g>
+                    ${tracksSvg}
+                    ${data.tracks.length > 5 ? `<animateTransform attributeName="transform" type="translate" from="0 0" to="0 -${scrollDist}" dur="${animDur}s" repeatCount="indefinite" />` : ''}
+                </g>
+                ${data.tracks.length > 5 ? `<g transform="translate(0, ${scrollDist})">
+                    ${tracksSvg}
+                    <animateTransform attributeName="transform" type="translate" from="0 0" to="0 -${scrollDist}" dur="${animDur}s" repeatCount="indefinite" />
+                </g>` : ''}
+            </svg>
+            
+            <g transform="translate(540, 230)">
                 <circle cx="15" cy="15" r="15" fill="white"/>
                 <svg width="20" height="20" x="5" y="5" viewBox="0 0 24 24">
                     <path d="M7 7h8.586L5.293 17.293l1.414 1.414L17 8.414V17h2V5H7v2z" fill="black"/>
@@ -107,6 +125,6 @@ module.exports = async (req, res) => {
 
     } catch (e) {
         console.error("SERVER ERROR:", e.message);
-        res.status(200).send(`<svg width="600" height="150" viewBox="0 0 600 150" xmlns="http://www.w3.org/2000/svg"><rect width="600" height="150" fill="#333"/><text x="50%" y="50%" fill="white" text-anchor="middle" font-family="sans-serif">Error: ${e.message}</text></svg>`);
+        res.status(200).send(`<svg width="600" height="900" viewBox="0 0 600 900" xmlns="http://www.w3.org/2000/svg"><rect width="600" height="900" fill="#333"/><text x="50%" y="50%" fill="white" text-anchor="middle" font-family="sans-serif">Error: ${e.message}</text></svg>`);
     }
 };
