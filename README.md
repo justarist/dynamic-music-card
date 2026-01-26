@@ -1,5 +1,8 @@
 # Dynamic Music Cards
 
+> [!IMPORTANT]
+> Project is currently in development, so some or all features may not work. After finishing development all features will be available.
+
 ### Supported Platforms:
 YT Music, Spotify, Yandex Music, Apple Music, Soundcloud
 
