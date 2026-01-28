@@ -120,8 +120,8 @@ module.exports = async (req, res) => {
         ]);
 
         const containerWidth = 270;
-        const titleLength = Buffer.from(data.title, 'utf8').length;
-        const authorLength = Buffer.from(data.author, 'utf8').length;
+        const titleLength = Buffer.from(normalizeText(data.title), 'utf8').length;
+        const authorLength = Buffer.from(normalizeText(data.author), 'utf8').length;
 
         const logoBase64 = LOGOS[data.platform];
 
