@@ -5,7 +5,8 @@ const {
     escapeHtml,
     validateLink,
     fetchImageAsBase64,
-    extractDominantColor
+    extractDominantColor,
+    normalizeText
 } = require('./utils');
 
 module.exports = async (req, res) => {
@@ -23,7 +24,7 @@ module.exports = async (req, res) => {
             });
             const $ = cheerio.load(response.data);
 
-            data.title = $('meta[property="og:title"]').attr('content') || "Unknown Title";
+            data.title = normalizeText($('meta[property="og:title"]').attr('content')) || "Unknown Title";
             data.image = $('meta[property="og:image"]').attr('content');
             data.platform = 'spotify';
 
@@ -31,17 +32,17 @@ module.exports = async (req, res) => {
             const twitter1 = $('meta[name="twitter:data1"]').attr('content');
 
             if (twitter1 && !twitter1.includes(':')) {
-                data.author = twitter1;
+                data.author = normalizeText(twitter1);
             } else if (ogDesc.includes(' · ')) {
                 const parts = ogDesc.split(' · ');
-                data.author = (parts[0].toLowerCase() === data.title.toLowerCase()) ? parts[1] : parts[0];
+                data.author = normalizeText((parts[0].toLowerCase() === data.title.toLowerCase()) ? parts[1] : parts[0]);
             } else {
-                data.author = ogDesc;
+                data.author = normalizeText(ogDesc);
             }
         } else if (link.includes('youtube.com') || link.includes('youtu.be')) {
             const oembed = await axios.get(`https://www.youtube.com/oembed?url=${encodeURIComponent(link)}&format=json`);
-            data.title = oembed.data.title;
-            data.author = oembed.data.author_name.replace(' - Topic', '');
+            data.title = normalizeText(oembed.data.title);
+            data.author = normalizeText(oembed.data.author_name).replace(' - Topic', '');
             data.image = oembed.data.thumbnail_url.replace('hqdefault', 'maxresdefault');
             data.platform = 'ytmusic';
         } else if (link.includes('music.yandex')) {
@@ -60,8 +61,8 @@ module.exports = async (req, res) => {
                     const trackData = resp.data.track;
 
                     if (trackData) {
-                        data.title = trackData.title;
-                        data.author = trackData.artists ? trackData.artists.map(a => a.name).join(', ') : "Артист";
+                        data.title = normalizeText(trackData.title);
+                        data.author = normalizeText(trackData.artists ? trackData.artists.map(a => a.name).join(', ') : "Артист");
 
                         if (trackData.coverUri) {
                             data.image = "https://" + trackData.coverUri.replace('%%', '400x400');
@@ -85,10 +86,10 @@ module.exports = async (req, res) => {
 
             if (ogTitle.includes(' by ')) {
                 const lastByIndex = ogTitle.lastIndexOf(' by ');
-                data.title = ogTitle.substring(0, lastByIndex);
-                data.author = ogTitle.substring(lastByIndex + 4);
+                data.title = normalizeText(ogTitle.substring(0, lastByIndex));
+                data.author = normalizeText(ogTitle.substring(lastByIndex + 4));
             } else {
-                data.title = ogTitle;
+                data.title = normalizeText(ogTitle);
                 data.author = "Apple Music";
             }
 
@@ -102,8 +103,8 @@ module.exports = async (req, res) => {
             data.platform = 'apple';
         } else if (link.includes('soundcloud.com')) {
             const oembed = await axios.get(`https://soundcloud.com/oembed?url=${encodeURIComponent(link)}&format=json`);
-            data.title = oembed.data.title;
-            data.author = oembed.data.author_name;
+            data.title = normalizeText(oembed.data.title);
+            data.author = normalizeText(oembed.data.author_name);
             data.image = oembed.data.thumbnail_url;
             data.platform = 'soundcloud';
             data.title = data.title.split(' by ')[0].trim();
@@ -118,7 +119,7 @@ module.exports = async (req, res) => {
             extractDominantColor(data.image)
         ]);
 
-        const containerWidth = 260;
+        const containerWidth = 270;
         const titleLength = Buffer.from(data.title, 'utf8').length;
         const authorLength = Buffer.from(data.author, 'utf8').length;
 

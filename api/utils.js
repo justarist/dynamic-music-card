@@ -55,11 +55,14 @@ const formatTime = (ms) => {
     return `${min}:${sec.toString().padStart(2, '0')}`;
 };
 
+const normalizeText = (str) => str.trim().replace(/\s+/g, ' ');
+
 module.exports = {
     LOGOS,
     escapeHtml,
     validateLink,
     fetchImageAsBase64,
     extractDominantColor,
-    formatTime
+    formatTime,
+    normalizeText
 };
