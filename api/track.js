@@ -127,7 +127,7 @@ module.exports = async (req, res) => {
 
         const escapedTitle = escapeHtml(data.title);
         const escapedAuthor = escapeHtml(data.author);
-
+        console.log("Title Length:", titleLength, "Author Length:", authorLength);
         const svg = `
         <svg width="600" height="300" viewBox="0 0 600 300" xmlns="http://www.w3.org/2000/svg">
             <rect width="600" height="300" rx="25" fill="${bgColor}"/>
