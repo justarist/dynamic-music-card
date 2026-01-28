@@ -120,6 +120,13 @@ module.exports = async (req, res) => {
             extractDominantColor(data.image)
         ]);
 
+        if (data.title.length > 19) {
+            data.title += "ㅤㅤㅤ";
+        }
+        if (data.author.length > 19) {
+            data.author += "ㅤㅤㅤ";
+        }
+
         const containerWidth = 270;
         const titleLength = data.title.length;
         const authorLength = data.author.length;
@@ -127,6 +134,9 @@ module.exports = async (req, res) => {
 
         const escapedTitle = escapeHtml(normalizeText(data.title));
         const escapedAuthor = escapeHtml(normalizeText(data.author));
+
+        const titleWidth = titleLength * 20.5;
+        const authorWidth = authorLength * 11.5;
 
         const svg = `
         <svg width="600" height="300" viewBox="0 0 600 300" xmlns="http://www.w3.org/2000/svg">
@@ -136,26 +146,47 @@ module.exports = async (req, res) => {
             <image href="${logoBase64}" x="540" y="30" width="30" height="30" />
 
             <svg x="300" y="100" width="${containerWidth}" height="100">
-                <defs>
-                    <clipPath id="textClip"><rect width="${containerWidth}" height="100" /></clipPath>
-                </defs>
+            <defs>
+                <clipPath id="titleClip">
+                    <rect width="${containerWidth}" height="40"/>
+                </clipPath>
+                <clipPath id="authorClip">
+                    <rect y="40" width="${containerWidth}" height="40"/>
+                </clipPath>
+            </defs>
 
-                <g clip-path="url(#textClip)">
-                    <text x="0" y="30" font-family="sans-serif" font-size="36" font-weight="bold" fill="white">
-                        ${escapedTitle}
-                        ${titleLength > 13 ? `
-                            <animate attributeName="x" from="270" to="-${titleLength * 20.5}" dur="${0.2*titleLength}s" repeatCount="indefinite" />
-                        ` : ''}
-                    </text>
+            <g clip-path="url(#titleClip)">
+            <g>
+                <text x="0" y="30" font-family="sans-serif" font-size="36" font-weight="bold" fill="#fff">
+                    ${escapedTitle}
+                </text>
 
-                    <text x="0" y="65" font-family="sans-serif" font-size="24" fill="#ccc">
-                        ${escapedAuthor}
-                        ${authorLength > 24 ? `
-                            <animate attributeName="x" from="0" to="-${authorLength * 11.5}" dur="${0.2*titleLength}s" repeatCount="indefinite" />
-                        ` : ''}
-                    </text>
-                </g>
-            </svg>
+                ${titleLength > 13 ? `
+                <text x="${titleWidth}" y="30" font-family="sans-serif" font-size="36" font-weight="bold" fill="#fff">
+                    ${escapedTitle}
+                </text>
+                
+                <animateTransform attributeName="transform" type="translate" from="0 0" to="-${titleWidth} 0" dur="${0.2 * titleLength}s" repeatCount="indefinite" />
+                ` : ''}
+            </g>
+            </g>
+
+            <g clip-path="url(#authorClip)">
+            <g>
+                <text x="0" y="65" font-family="sans-serif" font-size="24" fill="#ccc">
+                    ${escapedAuthor}
+                </text>
+
+                ${authorLength > 24 ? `
+                <text x="${authorWidth}" y="65" font-family="sans-serif" font-size="24" fill="#ccc">
+                    ${escapedAuthor}
+                </text>
+                
+                <animateTransform attributeName="transform" type="translate" from="0 0" to="-${authorWidth} 0" dur="${0.2 * authorLength}s" repeatCount="indefinite" />
+                ` : ''}
+            </g>
+            </g>
+        </svg>
 
             <circle cx="540" cy="240" r="25" fill="white"/>
             <path d="M545 240l-10-7v14z" fill="black"/>
