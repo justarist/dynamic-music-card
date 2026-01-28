@@ -1,5 +1,5 @@
 const axios = require('axios');
-const Jimp = require('jimp');
+const { Jimp, intToRGBA } = require('jimp');
 
 const LOGOS = {
     spotify: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZD0iTTEyIDBDNS40IDAgMCA1LjQgMCAxMnM1LjQgMTIgMTIgMTIgMTItNS40IDEyLTEyUzE4LjY2IDAgMTIgMHptNS41MjEgMTcuMzRjLS4yNC4zNTktLjY2LjQ4LTEuMDIxLjI0LTIuODItMS43NC02LjM2LTIuMTAxLTEwLjU2MS0xLjE0MS0uNDE4LjEyMi0uNzc5LS4xNzktLjg5OS0uNTM5LS4xMi0uNDIxLjE4LS43OC41NC0uOSA0LjU2LTEuMDIxIDguNTItLjYgMTEuNjQgMS4zMi40Mi4xOC40NzkuNjU5LjMwMSAxLjAyem0xLjQ0LTMuM2MtLjMwMS40Mi0uODQxLjYtMS4yNjIuMy0zLjIzOS0xLjk4LTguMTU5LTIuNTgtMTEuOTM5LTEuMzgtLjQ3OS4xMi0xLjAyLS4xMi0xLjE0LS42LS4xMi0uNDguMTItMS4wMjEuNi0xLjE0MUM5LjYgOS45IDE1IDEwLjU2MSAxOC43MiAxMi44NGMuMzYxLjE4MS41NC43OC4yNDEgMS4yek0xOS4wOCA3Ljk4QzE1LjI0IDguNCA4LjgyIDguMTYgNS4xNiA5LjMwMWMtLjYuMTc5LTEuMi0uMTgxLTEuMzgtLjcyMS0uMTgtLjYwMS4xOC0xLjIuNzItMS4zODEgNC4yNi0xLjI2IDExLjI4LTEuMDIgMTUuNzIxIDEuNjIxLjUzOS4zLjcxOSAxLjAyLjQxOSAxLjU2LS4yOTkuNDIxLTEuMDIuNTk5LTEuNTU5LjN6IiBmaWxsPSIjMURCODU0Ii8+PC9zdmc+",
@@ -26,24 +26,33 @@ const validateLink = (link) => {
 
 const fetchImageAsBase64 = async (imageUrl) => {
     try {
-        const response = await axios.get(imageUrl, { responseType: 'arraybuffer' });
-        const image = await Jimp.read(response.data);
-        image.cover(240, 240);
-        return await image.getBase64Async(Jimp.MIME_JPEG);
-    } catch {
-        const placeholder = await Jimp.create(240, 240, 0x333333ff);
-        return await placeholder.getBase64Async(Jimp.MIME_JPEG);
+        const response = await axios.get(imageUrl, {
+            responseType: 'arraybuffer',
+            headers: { 'User-Agent': 'Mozilla/5.0 (compatible; Googlebot/2.1)' }
+        });
+
+        const image = await Jimp.read(Buffer.from(response.data));
+        image.cover({ w: 240, h: 240 });
+
+        return await image.getBase64('image/jpeg');
+    } catch (err) {
+        console.error('Image fetch error:', err.message || err);
+        const placeholder = await new Jimp({ width: 240, height: 240, background: 0x333333FF });
+        return await placeholder.getBase64('image/jpeg');
     }
 };
 
 const extractDominantColor = async (imageUrl) => {
     try {
-        const response = await axios.get(imageUrl, { responseType: 'arraybuffer' });
+        const response = await axios.get(imageUrl, {
+            responseType: 'arraybuffer',
+            headers: { 'User-Agent': 'Mozilla/5.0 (compatible; Googlebot/2.1)' }
+        });
         const image = await Jimp.read(response.data);
-        const avg = image.clone().resize(1, 1).getPixelColor(0, 0);
-        const { r, g, b } = Jimp.intToRGBA(avg);
+        const avg = image.clone().resize({ w: 1, h: 1 }).getPixelColor(0, 0);
+        const { r, g, b } = intToRGBA(avg);
         return `rgb(${Math.floor(r * 0.8)}, ${Math.floor(g * 0.8)}, ${Math.floor(b * 0.8)})`;
-    } catch {
+    } catch (err) {
         return '#333333';
     }
 };

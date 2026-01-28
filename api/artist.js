@@ -68,9 +68,13 @@ module.exports = async (req, res) => {
             extractDominantColor(data.image)
         ]);
 
-        const titleLength = Buffer.from(data.title, 'utf8').length;
+        if (data.title.length > 19) {
+            data.title += "ㅤㅤㅤ";
+        }
+
+        const titleLength = data.title.length;
         const logoBase64 = LOGOS[data.platform];
-        const containerWidth = 420;
+        const containerWidth = 390;
 
         const escapedTitle = escapeHtml(data.title);
 
@@ -86,16 +90,28 @@ module.exports = async (req, res) => {
             <image href="${base64Image}" x="20" y="20" width="110" height="110" clip-path="url(#circleClip)"/>
             
             <image href="${logoBase64}" x="550" y="20" width="30" height="30" />
-            
+
             <svg x="160" y="55" width="${containerWidth}" height="50">
-                <defs><clipPath id="textClip"><rect width="${containerWidth}" height="50" /></clipPath></defs>
+                <defs>
+                <clipPath id="textClip">
+                    <rect width="${containerWidth}" height="50" />
+                </clipPath>
+                </defs>
+
                 <g clip-path="url(#textClip)">
+                <g>
                     <text x="0" y="32" font-family="sans-serif" font-size="36" font-weight="bold" fill="white">
-                        ${escapedTitle}
-                        ${titleLength > 21 ? `
-                            <animate attributeName="x" from="0" to="-${Math.max(titleLength - 21, 1) * 20}" dur="10s" repeatCount="indefinite" />
-                        ` : ''}
+                    ${escapedTitle}
                     </text>
+
+                    <text x="${titleLength * 20.5}" y="32" font-family="sans-serif" font-size="36" font-weight="bold" fill="white">
+                    ${escapedTitle}
+                    </text>
+
+                    ${titleLength > 19 ? `
+                    <animateTransform attributeName="transform" type="translate" from="0 0" to="-${titleLength * 20.5} 0" dur="${0.15 * titleLength}s" repeatCount="indefinite" />
+                    ` : ''}
+                </g>
                 </g>
             </svg>
 

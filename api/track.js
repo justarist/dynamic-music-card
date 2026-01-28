@@ -8,6 +8,7 @@ const {
     extractDominantColor,
     normalizeText
 } = require('./utils');
+const { title } = require('node:process');
 
 module.exports = async (req, res) => {
     const { link } = req.query;
@@ -120,14 +121,13 @@ module.exports = async (req, res) => {
         ]);
 
         const containerWidth = 270;
-        const titleLength = Buffer.from(normalizeText(data.title), 'utf8').length;
-        const authorLength = Buffer.from(normalizeText(data.author), 'utf8').length;
-
+        const titleLength = data.title.length;
+        const authorLength = data.author.length;
         const logoBase64 = LOGOS[data.platform];
 
-        const escapedTitle = escapeHtml(data.title);
-        const escapedAuthor = escapeHtml(data.author);
-        console.log("Title Length:", titleLength, "Author Length:", authorLength);
+        const escapedTitle = escapeHtml(normalizeText(data.title));
+        const escapedAuthor = escapeHtml(normalizeText(data.author));
+
         const svg = `
         <svg width="600" height="300" viewBox="0 0 600 300" xmlns="http://www.w3.org/2000/svg">
             <rect width="600" height="300" rx="25" fill="${bgColor}"/>
@@ -143,15 +143,15 @@ module.exports = async (req, res) => {
                 <g clip-path="url(#textClip)">
                     <text x="0" y="30" font-family="sans-serif" font-size="36" font-weight="bold" fill="white">
                         ${escapedTitle}
-                        ${titleLength > 16 ? `
-                            <animate attributeName="x" from="0" to="-${Math.max(titleLength - 16, 1) * 20}" dur="10s" repeatCount="indefinite" />
+                        ${titleLength > 13 ? `
+                            <animate attributeName="x" from="270" to="-${titleLength * 20.5}" dur="${0.2*titleLength}s" repeatCount="indefinite" />
                         ` : ''}
                     </text>
 
                     <text x="0" y="65" font-family="sans-serif" font-size="24" fill="#ccc">
                         ${escapedAuthor}
-                        ${authorLength > 22 ? `
-                            <animate attributeName="x" from="0" to="-${Math.max(authorLength - 22, 1) * 12}" dur="10s" repeatCount="indefinite" />
+                        ${authorLength > 24 ? `
+                            <animate attributeName="x" from="0" to="-${authorLength * 11.5}" dur="${0.2*titleLength}s" repeatCount="indefinite" />
                         ` : ''}
                     </text>
                 </g>
