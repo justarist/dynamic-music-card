@@ -24,30 +24,31 @@ or just
 ```
 <img alt="Example" src="https://dynamic-music-card.vercel.app/api/track?link=<your_link_here>" />
 ```
+Also add ```&cache_bust=1``` for better and faster updates
 # Examples
 
 ### Track card
 
 <a href="https://music.youtube.com/watch?v=BLZWkjBXfN8">
-    <img alt="Example" src="https://dynamic-music-card.vercel.app/api/track?link=https://music.youtube.com/watch?v=BLZWkjBXfN8" />
+    <img alt="Example" src="https://dynamic-music-card.vercel.app/api/track?link=https://music.youtube.com/watch?v=BLZWkjBXfN8&cache_bust=1" />
 </a>
 
 ### Artist card 
 
 <a href="https://open.spotify.com/artist/6XyY86QOPPrYVGvF9ch6wz">
-    <img alt="Example" src="https://dynamic-music-card.vercel.app/api/artist?link=https://open.spotify.com/artist/6XyY86QOPPrYVGvF9ch6wz" />
+    <img alt="Example" src="https://dynamic-music-card.vercel.app/api/artist?link=https://open.spotify.com/artist/6XyY86QOPPrYVGvF9ch6wz&cache_bust=1" />
 </a>
 
 ### Album card
 
 <a href="https://music.yandex.ru/album/22492384">
-    <img alt="Example" src="https://dynamic-music-card.vercel.app/api/album?link=https://music.yandex.ru/album/22492384" />
+    <img alt="Example" src="https://dynamic-music-card.vercel.app/api/album?link=https://music.yandex.ru/album/22492384&cache_bust=1" />
 </a>
 
 ### Playlist card
 
 <a href="https://music.youtube.com/playlist?list=OLAK5uy_nTX_UcyURUCsI2KNerL9nZi8mpxfshIAA">
-    <img alt="Example" src="https://dynamic-music-card.vercel.app/api/playlist?link=https://music.youtube.com/playlist?list=OLAK5uy_nTX_UcyURUCsI2KNerL9nZi8mpxfshIAA" />
+    <img alt="Example" src="https://dynamic-music-card.vercel.app/api/playlist?link=https://music.youtube.com/playlist?list=OLAK5uy_nTX_UcyURUCsI2KNerL9nZi8mpxfshIAA&cache_bust=1" />
 </a>
 
 ### Also I'll add some other features later
