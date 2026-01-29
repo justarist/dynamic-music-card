@@ -21,7 +21,7 @@ module.exports = async (req, res) => {
         if (link.includes('spotify.com')) {
             const resp = await axios.get(link, { headers: { 'User-Agent': 'Mozilla/5.0 (compatible; Googlebot/2.1)' } });
             const $ = cheerio.load(resp.data);
-            data.title = $('meta[property="og:title"]').attr('content') || "Spotify Album";
+            data.title = $('meta[property="og:title"]').attr('content').split(" - ")[0] || "Spotify Album";
             data.author = $('meta[property="og:description"]').attr('content')?.split(' · ')[0] || "Artist";
             data.image = $('meta[property="og:image"]').attr('content');
             const tracks = [];
@@ -37,7 +37,7 @@ module.exports = async (req, res) => {
         } else if (link.includes('youtube.com') || link.includes('youtu.be')) {
             const resp = await axios.get(link, { headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/119.0.0.0' } });
             const $ = cheerio.load(resp.data);
-            data.title = $('meta[property="og:title"]').attr('content') || "YouTube Album";
+            data.title = $('meta[property="og:title"]').attr('content').split(' – ')[0] || "YouTube Album";
             data.author = $('link[itemprop="name"]').attr('content') || "YouTube Artist";
             data.image = $('meta[property="og:image"]').attr('content');
             const tracks = [];
@@ -103,9 +103,21 @@ module.exports = async (req, res) => {
             extractDominantColor(data.image)
         ]);
 
+        if (data.title.length > 13) {
+            data.title += "ㅤㅤㅤ";
+        }
+        if (data.author.length > 24) {
+            data.author += "ㅤㅤㅤ";
+        }
+
         const escapedTitle = escapeHtml(data.title);
         const escapedAuthor = escapeHtml(data.author);
 
+        const containerWidth = 270;
+        const titleLength = data.title.length;
+        const authorLength = data.author.length;
+        const titleWidth = titleLength * 20.5;
+        const authorWidth = authorLength * 11.5;
         const trackHeight = 70;
         const maxTracks = 100;
         const visibleTracks = data.tracks.slice(0, maxTracks);
@@ -136,12 +148,52 @@ module.exports = async (req, res) => {
         <svg width="600" height="600" viewBox="0 0 600 600" xmlns="http://www.w3.org/2000/svg">
             <rect width="600" height="600" rx="25" fill="${bgColor}"/>
             
-            <defs><clipPath id="imgClip"><rect x="30" y="30" width="240" height="240" rx="15"/></clipPath></defs>
-            <image href="${base64Image}" x="40" y="40" width="220" height="220" clip-path="url(#imgClip)"/>
+            <clipPath id="c"><rect x="30" y="30" width="240" height="240" rx="15"/></clipPath>
+            <image href="${base64Image}" x="30" y="30" width="240" height="240" clip-path="url(#c)"/>
             <image href="${LOGOS[data.platform]}" x="540" y="30" width="30" height="30" />
             
-            <text x="280" y="130" font-family="sans-serif" font-size="32" font-weight="bold" fill="white">${escapedTitle.substring(0, 22)}</text>
-            <text x="280" y="175" font-family="sans-serif" font-size="22" fill="rgba(255,255,255,0.6)">${escapedAuthor.substring(0, 30)}</text>
+            <svg x="300" y="100" width="${containerWidth}" height="100">
+                <defs>
+                    <clipPath id="titleClip">
+                        <rect width="${containerWidth}" height="40"/>
+                    </clipPath>
+                    <clipPath id="authorClip">
+                        <rect y="40" width="${containerWidth}" height="40"/>
+                    </clipPath>
+                </defs>
+
+                <g clip-path="url(#titleClip)">
+                    <g>
+                        <text x="0" y="30" font-family="sans-serif" font-size="36" font-weight="bold" fill="#fff">
+                            ${escapedTitle}
+                        </text>
+
+                        ${titleLength > 13 ? `
+                        <text x="${titleWidth}" y="30" font-family="sans-serif" font-size="36" font-weight="bold" fill="#fff">
+                            ${escapedTitle}
+                        </text>
+                        
+                        <animateTransform attributeName="transform" type="translate" from="0 0" to="-${titleWidth} 0" dur="${0.2 * titleLength}s" repeatCount="indefinite" />
+                        ` : ''}
+                    </g>
+                </g>
+
+                <g clip-path="url(#authorClip)">
+                    <g>
+                        <text x="0" y="65" font-family="sans-serif" font-size="24" fill="#ccc">
+                            ${escapedAuthor}
+                        </text>
+
+                        ${authorLength > 24 ? `
+                        <text x="${authorWidth}" y="65" font-family="sans-serif" font-size="24" fill="#ccc">
+                            ${escapedAuthor}
+                        </text>
+                        
+                        <animateTransform attributeName="transform" type="translate" from="0 0" to="-${authorWidth} 0" dur="${0.2 * authorLength}s" repeatCount="indefinite" />
+                        ` : ''}
+                    </g>
+                </g>
+            </svg>
 
             <svg x="0" y="300" width="600" height="${listHeight}">
                 <g>

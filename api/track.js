@@ -120,10 +120,10 @@ module.exports = async (req, res) => {
             extractDominantColor(data.image)
         ]);
 
-        if (data.title.length > 19) {
+        if (data.title.length > 13) {
             data.title += "ㅤㅤㅤ";
         }
-        if (data.author.length > 19) {
+        if (data.author.length > 24) {
             data.author += "ㅤㅤㅤ";
         }
 
@@ -146,47 +146,47 @@ module.exports = async (req, res) => {
             <image href="${logoBase64}" x="540" y="30" width="30" height="30" />
 
             <svg x="300" y="100" width="${containerWidth}" height="100">
-            <defs>
-                <clipPath id="titleClip">
-                    <rect width="${containerWidth}" height="40"/>
-                </clipPath>
-                <clipPath id="authorClip">
-                    <rect y="40" width="${containerWidth}" height="40"/>
-                </clipPath>
-            </defs>
+                <defs>
+                    <clipPath id="titleClip">
+                        <rect width="${containerWidth}" height="40"/>
+                    </clipPath>
+                    <clipPath id="authorClip">
+                        <rect y="40" width="${containerWidth}" height="40"/>
+                    </clipPath>
+                </defs>
 
-            <g clip-path="url(#titleClip)">
-            <g>
-                <text x="0" y="30" font-family="sans-serif" font-size="36" font-weight="bold" fill="#fff">
-                    ${escapedTitle}
-                </text>
+                <g clip-path="url(#titleClip)">
+                    <g>
+                        <text x="0" y="30" font-family="sans-serif" font-size="36" font-weight="bold" fill="#fff">
+                            ${escapedTitle}
+                        </text>
 
-                ${titleLength > 13 ? `
-                <text x="${titleWidth}" y="30" font-family="sans-serif" font-size="36" font-weight="bold" fill="#fff">
-                    ${escapedTitle}
-                </text>
-                
-                <animateTransform attributeName="transform" type="translate" from="0 0" to="-${titleWidth} 0" dur="${0.2 * titleLength}s" repeatCount="indefinite" />
-                ` : ''}
-            </g>
-            </g>
+                        ${titleLength > 13 ? `
+                        <text x="${titleWidth}" y="30" font-family="sans-serif" font-size="36" font-weight="bold" fill="#fff">
+                            ${escapedTitle}
+                        </text>
+                        
+                        <animateTransform attributeName="transform" type="translate" from="0 0" to="-${titleWidth} 0" dur="${0.2 * titleLength}s" repeatCount="indefinite" />
+                        ` : ''}
+                    </g>
+                </g>
 
-            <g clip-path="url(#authorClip)">
-            <g>
-                <text x="0" y="65" font-family="sans-serif" font-size="24" fill="#ccc">
-                    ${escapedAuthor}
-                </text>
+                <g clip-path="url(#authorClip)">
+                    <g>
+                        <text x="0" y="65" font-family="sans-serif" font-size="24" fill="#ccc">
+                            ${escapedAuthor}
+                        </text>
 
-                ${authorLength > 24 ? `
-                <text x="${authorWidth}" y="65" font-family="sans-serif" font-size="24" fill="#ccc">
-                    ${escapedAuthor}
-                </text>
-                
-                <animateTransform attributeName="transform" type="translate" from="0 0" to="-${authorWidth} 0" dur="${0.2 * authorLength}s" repeatCount="indefinite" />
-                ` : ''}
-            </g>
-            </g>
-        </svg>
+                        ${authorLength > 24 ? `
+                        <text x="${authorWidth}" y="65" font-family="sans-serif" font-size="24" fill="#ccc">
+                            ${escapedAuthor}
+                        </text>
+                        
+                        <animateTransform attributeName="transform" type="translate" from="0 0" to="-${authorWidth} 0" dur="${0.2 * authorLength}s" repeatCount="indefinite" />
+                        ` : ''}
+                    </g>
+                </g>
+            </svg>
 
             <circle cx="540" cy="240" r="25" fill="white"/>
             <path d="M545 240l-10-7v14z" fill="black"/>
