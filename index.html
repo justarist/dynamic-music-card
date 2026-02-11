@@ -18,6 +18,16 @@
             --plt-soundcloud: #ff5500;
         }
 
+        ::selection {
+            background: var(--dynamic-color, var(--accent));
+            color: #000;
+        }
+
+        ::-moz-selection {
+            background: var(--dynamic-color, var(--accent));
+            color: #000;
+        }
+
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
