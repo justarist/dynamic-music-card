@@ -16,6 +16,7 @@
             --plt-apple: #fc3c44;
             --plt-youtube: #ff0033;
             --plt-soundcloud: #ff5500;
+            --btn-text: #fff;
         }
 
         ::selection {
@@ -149,7 +150,7 @@
             border-radius: 14px;
             border: none;
             background: var(--dynamic-color, linear-gradient(135deg, var(--accent), var(--accent-purple)));
-            color: #fff;
+            color: var(--btn-text);
             font-size: 1rem;
             font-weight: 700;
             cursor: pointer;
@@ -492,6 +493,7 @@
                 root.style.setProperty('--dynamic-color', p.color);
                 root.style.setProperty('--dynamic-rgb', p.rgb);
                 document.getElementById('b1').style.background = p.color;
+                if (detected === 'yandex') root.style.setProperty('--btn-text', '#000');;
             } else {
                 root.style.removeProperty('--dynamic-color');
                 root.style.removeProperty('--dynamic-rgb');
