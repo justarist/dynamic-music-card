@@ -193,21 +193,50 @@
             background: rgba(0,0,0,0.5);
             padding: 15px;
             border-radius: 12px;
-            font-family: monospace;
-            font-size: 0.8rem;
             margin-top: 15px;
             border: 1px solid var(--glass-border);
             position: relative;
             text-align: left;
-            overflow-x: auto;
+            overflow-x: hidden;
+        }
+
+        .code-box code {
+            font-family: 'Fira Code', monospace;
+            padding-right: 60px;
+            font-size: 0.8rem;
+            color: #fff;
+            white-space: pre-wrap; 
+            word-break: break-all;
+            display: block;
         }
 
         .copy-btn {
             position: absolute;
-            right: 10px; top: 10px;
-            background: rgba(255,255,255,0.1);
-            border: none; color: #fff;
-            padding: 4px 8px; border-radius: 6px; cursor: pointer;
+            right: 8px; 
+            top: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            color: #fff;
+            padding: 6px 10px; 
+            border-radius: 8px; 
+            cursor: pointer;
+            font-size: 0.7rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            z-index: 2;
+        }
+
+        .copy-btn:hover {
+            background: var(--dynamic-color, var(--accent));
+            color: #000;
+            border-color: transparent;
+            transform: translateY(-1px);
+        }
+
+        .copy-btn:active {
+            transform: translateY(0);
         }
 
         .external-links {
@@ -243,6 +272,80 @@
         }
 
         @keyframes spin { to { transform: rotate(360deg); } }
+
+        .theme-selector {
+            display: flex;
+            gap: 10px;
+        }
+        .theme-btn {
+            flex: 1;
+            padding: 10px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--glass-border);
+            border-radius: 10px;
+            color: #888;
+            cursor: pointer;
+            transition: 0.3s;
+            font-size: 0.8rem;
+        }
+        .theme-btn.active {
+            border-color: var(--dynamic-color, var(--accent));
+            color: #fff;
+            background: rgba(var(--dynamic-rgb, 0, 210, 255), 0.1);
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 34px;
+            height: 20px;
+        }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(255,255,255,0.1);
+            transition: .4s;
+            border-radius: 34px;
+            border: 1px solid var(--glass-border);
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 12px; width: 12px;
+            left: 3px; bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider { background-color: var(--dynamic-color, var(--accent)); }
+        input:checked + .slider:before { transform: translateX(14px); }
+        ::-webkit-scrollbar { width: 12px; height: 12px; }
+        ::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb {
+            background-color: rgba(var(--dynamic-rgb, 0, 210, 255), 0.8); 
+            border-radius: 10px;
+            border: 4px solid transparent;
+            background-clip: content-box;
+            transition: background-color 0.3s ease;
+        }
+        ::-webkit-scrollbar-thumb:hover { background-color: var(--dynamic-color, var(--accent)); }
+        #results label {
+            display: block;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            margin-top: 25px;
+            margin-bottom: 8px;
+            color: #888;
+            text-align: left;
+        }
+
+        .hl-tag { color: var(--dynamic-color, var(--accent)); }
+        .hl-attr { color: #fff; opacity: 0.8; }
+        .hl-str { color: var(--accent-purple); }
+        .hl-md-bracket { color: var(--dynamic-color, var(--accent)); }
     </style>
 </head>
 <body>
@@ -257,7 +360,7 @@
         <div class="glass-panel">
             <header>
                 <h1>Dynamic Music Card</h1>
-                <p style="color: #666; font-size: 0.85rem;">Dynamic SVG widgets generator for your GitHub README</p>
+                <p style="color: #888; font-size: 0.85rem;">Dynamic SVG widgets generator for your GitHub README</p>
             </header>
 
             <div class="input-group">
@@ -267,8 +370,25 @@
 
             <div class="radio-group">
                 <label class="radio-option"><input type="radio" name="type" value="track" checked><span>Track</span></label>
-                <label class="radio-option"><input type="radio" name="type" value="author"><span>Artist</span></label>
+                <label class="radio-option"><input type="radio" name="type" value="artist"><span>Artist</span></label>
                 <label class="radio-option"><input type="radio" name="type" value="album"><span>Album</span></label>
+            </div>
+
+            <div class="input-group" style="margin-top: 20px;">
+                <label>Select Theme</label>
+                <div class="theme-selector" id="themeSelector">
+                    <button class="theme-btn active" onclick="selectTheme(this, 'plastic')">Plastic</button>
+                    <button class="theme-btn" onclick="selectTheme(this, 'glass')">Glass</button>
+                    <button class="theme-btn" onclick="selectTheme(this, 'retro')">Retro</button>
+                </div>
+            </div>
+
+            <div style="margin: 20px 0; display: flex; align-items: center; gap: 10px;">
+                <label class="switch">
+                    <input type="checkbox" id="cacheBust">
+                    <span class="slider"></span>
+                </label>
+                <span style="font-size: 0.85rem; color: #aaa;">Enable Cache Bust (No cache)</span>
             </div>
 
             <button class="main-btn" onclick="generateCard()">Generate Card</button>
@@ -286,13 +406,20 @@
                 <img id="previewImg" src="" alt="Preview">
                 
                 <div id="results" style="display: none;">
+                    <label>Markdown Code</label>
                     <div class="code-box">
                         <code id="mdCode"></code>
                         <button class="copy-btn" onclick="copyText('mdCode')">Copy</button>
                     </div>
+                    <label>HTML Code (no referrer)</label>
                     <div class="code-box">
-                        <code id="htmlCode"></code>
-                        <button class="copy-btn" onclick="copyText('htmlCode')">Copy</button>
+                        <code id="htmlCodeNoReferrer"></code>
+                        <button class="copy-btn" onclick="copyText('htmlCodeNoReferrer')">Copy</button>
+                    </div>
+                    <label>HTML Code (with referrer)</label>
+                    <div class="code-box">
+                        <code id="htmlCodeReferrer"></code>
+                        <button class="copy-btn" onclick="copyText('htmlCodeReferrer')">Copy</button>
                     </div>
                 </div>
             </div>
@@ -323,9 +450,17 @@
 
         const typeKeywords = {
             track: ['track', 'watch', 'song', 'playback'],
-            author: ['artist', 'author', 'composer'],
+            artist: ['artist', 'author', 'composer'],
             album: ['album', 'playlist', 'sets']
         };
+
+        let currentTheme = 'default';
+
+        function selectTheme(btn, theme) {
+            document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentTheme = theme;
+        }
 
         function detectPlatform() {
             const val = document.getElementById('linkInput').value.toLowerCase();
@@ -364,6 +499,24 @@
             }
         }
 
+        function applyHighlight(text, type) {
+            if (type === 'html') {
+                let res = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                
+                return res.replace(/(&lt;\/?[a-z1-6]+|&gt;)|(\s[a-z-]+(?==))|("(.*?)")/gi, (match, tag, attr, str) => {
+                    if (tag) return `<span class="hl-tag">${tag}</span>`;
+                    if (attr) return ` <span class="hl-attr">${attr.trim()}</span>`;
+                    if (str) return `<span class="hl-str">${str}</span>`;
+                    return match;
+                });
+            } else {
+                return text
+                    .replace(/(!\[|\]\(|\))/g, '<span class="hl-tag">$1</span>')
+                    .replace(/\[(.*?)\]/g, '[<span class="hl-attr">$1</span>]')
+                    .replace(/\((.*?)\)/g, '(<span class="hl-str">$1</span>)');
+            }
+        }
+
         function generateCard() {
             const link = document.getElementById('linkInput').value.trim();
             const type = document.querySelector('input[name="type"]:checked').value;
@@ -377,23 +530,43 @@
             img.style.display = 'none';
             res.style.display = 'none';
 
-            const apiUrl = `${DOMAIN}/api/${type}?link=${encodeURIComponent(link)}`;
+            let apiUrl = `${DOMAIN}/api/${type}?link=${encodeURIComponent(link)}`;
+
+            apiUrl += `&theme=${currentTheme}`;
+
+            if (document.getElementById('cacheBust').checked) apiUrl += `&cache_bust=1`;
             
             img.onload = () => {
                 loader.style.display = 'none';
                 img.style.display = 'block';
                 res.style.display = 'block';
-                document.getElementById('mdCode').innerText = `![Music](${apiUrl})`;
-                document.getElementById('htmlCode').innerText = `<a href="${link}">\n<img src="${apiUrl}" alt="Music">\n</a>`;
+                
+                const mdRaw = `![Music](${apiUrl})`;
+                const htmlNoRefRaw = `<img src="${apiUrl}" alt="Music">`;
+                const htmlRefRaw = `<a href="${link}"><img src="${apiUrl}" alt="Music"></a>`;
+
+                document.getElementById('mdCode').innerHTML = applyHighlight(mdRaw, 'md');
+                document.getElementById('htmlCodeNoReferrer').innerHTML = applyHighlight(htmlNoRefRaw, 'html');
+                document.getElementById('htmlCodeReferrer').innerHTML = applyHighlight(htmlRefRaw, 'html');
             };
             img.src = apiUrl + "&t=" + Date.now();
         }
 
         function copyText(id) {
-            navigator.clipboard.writeText(document.getElementById(id).innerText);
-            const btn = event.target;
+            const text = document.getElementById(id).innerText;
+            navigator.clipboard.writeText(text);
+            
+            const btn = event.currentTarget;
+            const originalText = btn.innerText;
             btn.innerText = "Copied!";
-            setTimeout(() => btn.innerText = "Copy", 2000);
+            btn.style.background = "var(--dynamic-color, var(--accent))";
+            btn.style.color = "#000";
+            
+            setTimeout(() => {
+                btn.innerText = originalText;
+                btn.style.background = "";
+                btn.style.color = "";
+            }, 2000);
         }
 
         detectPlatform();
