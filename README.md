@@ -1,7 +1,7 @@
 # Dynamic Music Cards
 
 > [!TIP]
-> You can generate link for your GitHub README at our main page, [check it out here](dynamic-music-card.vercel.app).
+> You can generate link for your GitHub README at our main page, [check it out here](https://dynamic-music-card.vercel.app).
 
 > [!IMPORTANT]
 > Project is currently in development, so some or all features may not work. After finishing development all features will be available.
