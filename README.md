@@ -5,8 +5,8 @@
 
 > [!TIP]
 > You can use new links instead of old ones:
-> https://dmc.justarist.cc
-> https://dynamic-music-card.justarist.cc
+> - https://dmc.justarist.cc
+> - https://dynamic-music-card.justarist.cc
 
 > [!IMPORTANT]
 > Project is currently in development, so some or all features may not work. After finishing development all features will be available.
