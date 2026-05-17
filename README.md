@@ -1,5 +1,10 @@
 # Dynamic Music Cards
 
+> [!IMPORTANT]
+> This repo is now archived, but you can still generate music cards on main page. 
+> I wanna remake this project from the blank because i've changed an idea of this project and wanna change a realization (bc now it's pretty bad).
+> Link to the new project will be added to this README after it will be created and starts working
+
 > [!TIP]
 > You can generate link for your GitHub README at our main page, [check it out here](https://dynamic-music-card.justarist.cc).
 
@@ -7,9 +12,6 @@
 > You can use new links instead of old ones:
 > - https://dmc.justarist.cc
 > - https://dynamic-music-card.justarist.cc
-
-> [!IMPORTANT]
-> Project is currently in development, so some or all features may not work. After finishing development all features will be available.
 
 ### Supported Platforms:
 YT Music, Spotify, Yandex Music, Apple Music, Soundcloud
